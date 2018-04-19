@@ -52,8 +52,8 @@ object Raster {
   /**
     * Implicit conversion from a [[Raster]] to a PolygonFeature.
     */
-  implicit def rasterToFeature[T <: CellGrid](r: Raster[T]): PolygonFeature[T] =
-    r.asFeature
+//  implicit def rasterToFeature[T <: CellGrid](r: Raster[T]): PolygonFeature[T] =
+//    r.asFeature
 
   /**
     * Implicit conversion from a PolygonFeature to a [[Raster]].
@@ -86,7 +86,7 @@ case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, E
     * Return the PolygonFeature associated with the extent of this
     * [[Raster]].
     */
-  def asFeature(): PolygonFeature[T] = PolygonFeature(extent.toPolygon, tile: T)
+  ///def asFeature(): PolygonFeature[T] = PolygonFeature(extent.toPolygon, tile: T)
 
   def mapTile[A <: CellGrid](f: T => A): Raster[A] = Raster(f(tile), extent)
 
