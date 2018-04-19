@@ -84,29 +84,9 @@ lazy val commonSettings = Seq(
 
 lazy val root = Project("geotrellis", file(".")).
   aggregate(
-    accumulo,
-    cassandra,
-    `doc-examples`,
-    geomesa,
-    geotools,
-    geowave,
-    hbase,
-    macros,
     proj4,
-    raster,
-    `raster-testkit`,
-    s3,
-    `s3-testkit`,
-    shapefile,
-    slick,
-    spark,
-    `spark-etl`,
-    `spark-pipeline`,
-    `spark-testkit`,
     util,
-    vector,
-    `vector-testkit`,
-    vectortile
+    vector
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).

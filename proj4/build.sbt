@@ -9,3 +9,5 @@ libraryDependencies ++= Seq(
   scalacheck % Test,
   scaffeine
 )
+
+publishArtifact in packageDoc := false
