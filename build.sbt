@@ -84,9 +84,17 @@ lazy val commonSettings = Seq(
 
 lazy val root = Project("geotrellis", file(".")).
   aggregate(
+    geotools,
+    macros,
     proj4,
+    raster,
+    `raster-testkit`,
+    shapefile,
+    slick,
     util,
-    vector
+    vector,
+    `vector-testkit`,
+    vectortile
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
@@ -98,8 +106,7 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.proj4._
       import geotrellis.spark._
       """
-  ).
-  settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
+  )
 
 lazy val macros = project
   .settings(commonSettings)
@@ -137,96 +144,20 @@ lazy val `raster-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
 
-lazy val slick = project
-  .dependsOn(vector)
-  .settings(commonSettings)
-
-lazy val spark = project
-  .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test)
-  .settings(commonSettings)
-  .settings(
-    // This takes care of a pseudo-cyclic dependency between the `spark` test scope, `spark-testkit`,
-    // and `spark` main (compile) scope. sbt is happy with this. IntelliJ requires that `spark-testkit`
-    // be added to the `spark` module dependencies manually (via "Open Module Settings" context menu for "spark" module).
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("spark-testkit"), Compile)).value
-  )
-
-lazy val `spark-testkit` = project
-  .dependsOn(`raster-testkit`, spark)
-  .settings(commonSettings)
-
-lazy val s3 = project
-  .dependsOn(
-    spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
-  )
-  .settings(commonSettings)
-  .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("s3-testkit"), Compile)).value
-  )
-
-lazy val `s3-testkit` = project
-  .dependsOn(s3, spark)
-  .settings(commonSettings)
-
-lazy val accumulo = project
-  .dependsOn(
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
-  )
-  .settings(commonSettings)
-
-lazy val cassandra = project
-  .dependsOn(
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
-  )
-  .settings(commonSettings)
-
-lazy val hbase = project
-  .dependsOn(
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
-  )
-  .settings(commonSettings) // HBase depends on its own protobuf version
-  .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
-
-lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra, hbase).
-  settings(commonSettings)
-
-lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
-  dependsOn(spark, s3, `spark-testkit` % "test").
-  settings(commonSettings)
-
 lazy val geotools = project
   .dependsOn(raster, vector, proj4, `vector-testkit` % Test, `raster-testkit` % Test,
     `raster` % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
   )
   .settings(commonSettings)
 
-lazy val geomesa = project
-  .dependsOn(`spark-testkit` % Test, spark, geotools, accumulo)
+lazy val slick = project
+  .dependsOn(vector)
   .settings(commonSettings)
 
-lazy val geowave = project
-  .dependsOn(
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test, geotools, accumulo
-  )
-  .settings(commonSettings)
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)
   .settings(commonSettings)
 
 lazy val util = project
-  .settings(commonSettings)
-
-lazy val `doc-examples` = project
-  .dependsOn(spark, s3, accumulo, cassandra, hbase, spark, `spark-testkit`)
-  .settings(commonSettings)
-
-lazy val bench = project
-  .dependsOn(spark)
   .settings(commonSettings)
