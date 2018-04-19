@@ -9,7 +9,7 @@ lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
   description := Info.description,
-  organization := "org.locationtech.geotrellis",
+  organization := "com.github.jw3",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url(Info.url)),
   scmInfo := Some(ScmInfo(
@@ -30,25 +30,6 @@ lazy val commonSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
-
-  publishTo := {
-    val sonatype = "https://oss.sonatype.org/"
-    val locationtech = "https://repo.locationtech.org/content/repositories"
-    if (isSnapshot.value) {
-      // Publish snapshots to LocationTech
-      Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
-    } else {
-      val milestoneRx = """-(M|RC)\d+$""".r
-      milestoneRx.findFirstIn(Version.geotrellis) match {
-        case Some(v) =>
-          // Public milestones to LocationTech
-          Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
-        case None =>
-          // Publish releases to Sonatype
-          Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
-      }
-    }
-  },
 
   credentials ++= List(Path.userHome / ".ivy2" / ".credentials")
     .filter(_.asFile.canRead)
@@ -97,7 +78,7 @@ lazy val root = Project("geotrellis", file(".")).
     vectortile
   ).
   settings(commonSettings: _*).
-  enablePlugins(ScalaUnidocPlugin).
+  enablePlugins(BintrayPlugin, ScalaUnidocPlugin).
   settings(
     initialCommands in console :=
       """
@@ -105,7 +86,10 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.vector._
       import geotrellis.proj4._
       import geotrellis.spark._
-      """
+      """,
+    bintrayRepository := {
+      if (isSnapshot.value) " maven-snapshots" else "maven"
+    }
   )
 
 lazy val macros = project
